@@ -4,7 +4,7 @@ apply plugin: 'idea'
 
 apply from: 'unittest.gradle'
 
-group 'com.github.adrninistrator'
+group 'com.github.lichaosun'
 version = "1.0.15"
 def projectName = "java-all-call-graph"
 description = "${projectName}"
@@ -58,6 +58,7 @@ List apache_common = [
 List graphviz = ['guru.nidi:graphviz-java:0.18.1']
 
 List java_tools = [files('lib/tools.jar')]
+//List java_tools = ['com.sun:tools:1.8.0']
 
 List druid = ['com.alibaba:druid:1.2.15']
 
