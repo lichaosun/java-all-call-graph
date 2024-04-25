@@ -444,7 +444,7 @@ public class RunnerWriteDb extends RunnerWriteCallGraphFile {
         List<String> list = dbOperWrapper.getClassName();
         List<String> javaFileList = new ArrayList<>();
         for(String className: list) {
-            String filePath = javaBaseDir + File.separator + className.replace(".", "/") + ".java";
+            String filePath = javaBaseDir + File.separator + className.replace(".", File.separator) + ".java";
             if (JACGFileUtil.isFileExists(filePath)) {
                 javaFileList.add(filePath);
             }

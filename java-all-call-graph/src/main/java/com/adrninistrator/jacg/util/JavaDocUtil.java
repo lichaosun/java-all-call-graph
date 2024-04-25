@@ -72,7 +72,7 @@ public class JavaDocUtil {
             MethodDoc[] methodDocs = classDoc.methods();
             for (MethodDoc methodDoc : methodDocs) {
                 String methodName = methodDoc.name();
-                String fullMethod = methodDoc.toString().replace("." + methodName, ":" + methodName).replace(" ", "");
+                String fullMethod = methodDoc.toString().replace(classDoc + "." + methodName, classDoc + ":" + methodName).replace(" ", "");
                 String methodCommentText = methodDoc.getRawCommentText();
                 map.put(fullMethod, methodCommentText);
             }

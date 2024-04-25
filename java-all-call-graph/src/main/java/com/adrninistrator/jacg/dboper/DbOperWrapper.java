@@ -370,6 +370,30 @@ public class DbOperWrapper {
         return dbOperator.queryListOneColumn(sql, String.class, fullMethod);
     }
 
+    /**
+     * 根据方法备注查找方法名
+     *
+     * @param commentText
+     * @return
+     */
+    public List<String> getFullMethodByCommentText(String commentText) {
+        SqlKeyEnum sqlKeyEnum = SqlKeyEnum.MA_QUERY_FULL_METHOD_BY_COMMENT;
+        String sql = getCachedSql(sqlKeyEnum);
+        if (sql == null) {
+            sql = "select " + DC.MA_FULL_METHOD +
+                    " from " + DbTableInfoEnum.DTIE_METHOD_COMMENT.getTableName() +
+                    " where " + DC.CA_ATTRIBUTE_VALUE + " like concat('%', ?, '%')";
+            sql = cacheSql(sqlKeyEnum, sql);
+        }
+
+        return dbOperator.queryListOneColumn(sql, String.class, commentText);
+    }
+
+    /**
+     * 获取所有的类
+     *
+     * @return
+     */
     public List<String> getClassName() {
         SqlKeyEnum sqlKeyEnum = SqlKeyEnum.MI_QUERY_CLASS_NAME;
         String sql = getCachedSql(sqlKeyEnum);
