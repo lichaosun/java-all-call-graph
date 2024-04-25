@@ -10,32 +10,11 @@ import com.adrninistrator.jacg.common.enums.OtherConfigFileUseListEnum;
 import com.adrninistrator.jacg.common.enums.OtherConfigFileUseSetEnum;
 import com.adrninistrator.jacg.extensions.manual_add_method_call.AbstractManualAddMethodCall1;
 import com.adrninistrator.jacg.handler.method.MethodCallHandler;
-import com.adrninistrator.jacg.handler.write_db.AbstractWriteDbHandler;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4ClassAnnotation;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4ClassInfo;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4ClassName;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4ClassSignatureEi1;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4ExtendsImpl;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4ExtendsImplPre;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4InnerClassInfo;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4JarInfo;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4LambdaMethodInfo;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4MethodAnnotation;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4MethodArgGenericsType;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4MethodArgType;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4MethodCall;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4MethodCallInfo;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4MethodInfo;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4MethodLineNumber;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4MethodReturnGenericsType;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4MyBatisMSTable;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4MyBatisMSWriteTable;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4SpringBean;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4SpringController;
-import com.adrninistrator.jacg.handler.write_db.WriteDbHandler4SpringTask;
+import com.adrninistrator.jacg.handler.write_db.*;
 import com.adrninistrator.jacg.util.JACGFileUtil;
 import com.adrninistrator.jacg.util.JACGSqlUtil;
 import com.adrninistrator.jacg.util.JACGUtil;
+import com.adrninistrator.jacg.util.JavaDocUtil;
 import com.adrninistrator.javacg.common.enums.JavaCGOutPutFileTypeEnum;
 import com.adrninistrator.javacg.util.JavaCGUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -241,6 +220,9 @@ public class RunnerWriteDb extends RunnerWriteCallGraphFile {
         if (!checkResult()) {
             return false;
         }
+
+        // 处理注释信息
+        handleComments();
 
         // 打印重复的类名
         printDuplicateClasses();
@@ -450,6 +432,25 @@ public class RunnerWriteDb extends RunnerWriteCallGraphFile {
         writeDbHandler4MethodAnnotation.setSpringControllerMethodHashSet(springControllerMethodHashSet);
         writeDbHandler4MethodAnnotation.setWithAnnotationMethodHashSet(withAnnotationMethodHashSet);
         return writeDbHandler4MethodAnnotation.handle(javaCGOutputInfo);
+    }
+
+    // 处理注释信息
+    private boolean handleComments() {
+        if("".equals(javaBaseDir)) {
+            return true;
+        }
+        WriteDbHandler4MethodComment writeDbHandler4MethodComment = new WriteDbHandler4MethodComment();
+        initWriteDbHandler(writeDbHandler4MethodComment);
+        List<String> list = dbOperWrapper.getClassName();
+        List<String> javaFileList = new ArrayList<>();
+        for(String className: list) {
+            String filePath = javaBaseDir + File.separator + className.replace(".", "/") + ".java";
+            if (JACGFileUtil.isFileExists(filePath)) {
+                javaFileList.add(filePath);
+            }
+        }
+
+        return writeDbHandler4MethodComment.handle(javaFileList);
     }
 
     // 处理方法

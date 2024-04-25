@@ -68,6 +68,13 @@ public abstract class AbstractRunner {
 
     protected final String currentSimpleClassName = this.getClass().getSimpleName();
 
+    // 输出结果文件类型
+    protected String outputFileType;
+
+    // Java源文件地址
+    protected String javaBaseDir;
+
+
     /**
      * 入口方法
      *
@@ -112,10 +119,13 @@ public abstract class AbstractRunner {
             if (handleDb()) {
                 // 需要操作数据库时执行的操作
                 appName = configureWrapper.getMainConfig(ConfigKeyEnum.CKE_APP_NAME);
+                outputFileType = configureWrapper.getMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_EXT);
+                javaBaseDir = configureWrapper.getMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_JAVA_DIR);
                 // 完成需要使用的基础配置的初始化
                 dbOperWrapper = DbOperWrapper.genInstance(configureWrapper, currentSimpleClassName);
                 dbOperator = dbOperWrapper.getDbOperator();
                 jacgExtendsImplHandler = new JACGExtendsImplHandler(dbOperWrapper);
+
             }
             inited = true;
         }

@@ -238,6 +238,17 @@ public class JACGCallGraphFileUtil {
     }
 
     /**
+     * 获取方法所在的类、调用行
+     *
+     * @auth slch
+     * @param column1
+     * @return
+     */
+    private static String[] getSimpleClassNameAndLineNum(String column1) {
+        return StringUtils.substringBetween(column1, JavaCGConstants.FLAG_LEFT_BRACKET, JavaCGConstants.FLAG_RIGHT_BRACKET).split(JavaCGConstants.FLAG_COLON);
+    }
+
+    /**
      * 获取方法级别为0的完整方法及注解
      *
      * @param column1
@@ -261,6 +272,7 @@ public class JACGCallGraphFileUtil {
         // 对方法完整调用链文件行进行分隔
         String[] array = splitCallGraphLine(line, true);
         String column1 = array[0];
+        String column2 = array[1];
         String fullMethodWithAnnotations;
         int nextStartIndex;
 
@@ -282,8 +294,14 @@ public class JACGCallGraphFileUtil {
             fullMethodWithAnnotations = JACGUtil.getFirstExcludeSubString(column1SubString, JACGConstants.FLAG_CHAR_SPACE);
             nextStartIndex = 2;
         }
+
+        String[] classNameAndLineNum = getSimpleClassNameAndLineNum(column2);
+        String className = classNameAndLineNum[0];
+        int lineNum = Integer.parseInt(classNameAndLineNum[1]);
         // 为方法完整调用链解析每行包含的内容
-        return parseCallGraphLine(line, methodLevel, fullMethodWithAnnotations, array, nextStartIndex);
+        CallGraphLineParsed parseCallGraphLine = parseCallGraphLine(line, methodLevel, fullMethodWithAnnotations, array, nextStartIndex);
+        parseCallGraphLine.setLineNum(lineNum);
+        return parseCallGraphLine;
     }
 
     /**

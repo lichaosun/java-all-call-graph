@@ -1,6 +1,19 @@
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.adrninistrator/java-all-call-graph.svg)](https://search.maven.org/artifact/com.github.adrninistrator/java-all-call-graph/)
 
 [![Apache License 2.0](https://img.shields.io/badge/license-Apache%20License%202.0-green.svg)](https://github.com/Adrninistrator/java-all-call-graph/blob/master/LICENSE)
+# 0. 序言
+项目是基于[https://github.com/Adrninistrator/java-all-call-graph](https://github.com/Adrninistrator/java-all-call-graph), 原项目中有这样的描述：
+
+`本项目提供了扩展功能，可用于为Java代码自动生成UML时序图`，可参考[https://github.com/Adrninistrator/gen-java-code-uml-sequence-diagram](https://github.com/Adrninistrator/gen-java-code-uml-sequence-diagram)，实际上生成UML时序图这个项目为空，原作者还没有实现。
+
+新增的功能之一就是实现：Java代码自动生成UML流程图。
+
+新增的功能之二就是实现：流程图中支持显示Java方法注释。
+
+总之，一切都是为了增强可读性，实用性。
+
+
+
 # 1. 前言
 
 在很多场景下，如果能够生成Java代码中方法之间的调用链，是很有帮助的，例如分析代码执行流程、确认被修改代码的影响范围、代码审计/漏洞分析等。

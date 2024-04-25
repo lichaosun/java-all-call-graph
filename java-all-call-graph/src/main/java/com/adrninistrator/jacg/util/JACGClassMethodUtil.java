@@ -153,13 +153,21 @@ public class JACGClassMethodUtil {
     public static MethodDetail genMethodDetail(String fullMethod) {
         String className = getClassNameFromMethod(fullMethod);
         int indexColon = fullMethod.indexOf(JavaCGConstants.FLAG_COLON);
-        int indexLeftBrackets = fullMethod.indexOf(JavaCGConstants.FLAG_LEFT_BRACKET);
-        String methodName = fullMethod.substring(indexColon + 1, indexLeftBrackets);
-        String argStr = fullMethod.substring(indexLeftBrackets);
-        int indexRightBrackets = fullMethod.lastIndexOf(JavaCGConstants.FLAG_RIGHT_BRACKET);
-        String argWithoutBrackets = fullMethod.substring(indexLeftBrackets + JavaCGConstants.FLAG_LEFT_BRACKET.length(), indexRightBrackets);
-        String[] args = StringUtils.splitPreserveAllTokens(argWithoutBrackets, JavaCGConstants.FLAG_COMMA);
-        return new MethodDetail(fullMethod, className, methodName, argStr, args);
+        if(fullMethod.contains(JavaCGConstants.FLAG_LEFT_BRACKET)) {
+            int indexLeftBrackets = fullMethod.indexOf(JavaCGConstants.FLAG_LEFT_BRACKET);
+            String methodName = fullMethod.substring(indexColon + 1, indexLeftBrackets);
+            String argStr = fullMethod.substring(indexLeftBrackets);
+            int indexRightBrackets = fullMethod.lastIndexOf(JavaCGConstants.FLAG_RIGHT_BRACKET);
+            String argWithoutBrackets = fullMethod.substring(indexLeftBrackets + JavaCGConstants.FLAG_LEFT_BRACKET.length(), indexRightBrackets);
+            String[] args = StringUtils.splitPreserveAllTokens(argWithoutBrackets, JavaCGConstants.FLAG_COMMA);
+            return new MethodDetail(fullMethod, className, methodName, argStr, args);
+        } else {
+            String methodName = fullMethod.substring(indexColon + 1);
+            String argStr = "";
+            String[] args = {};
+            return new MethodDetail(fullMethod, className, methodName, argStr, args);
+        }
+
     }
 
     /**

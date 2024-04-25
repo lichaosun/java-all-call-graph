@@ -2,16 +2,13 @@ package com.adrninistrator.jacg.runner;
 
 import com.adrninistrator.jacg.common.DC;
 import com.adrninistrator.jacg.common.JACGConstants;
-import com.adrninistrator.jacg.common.enums.DbTableInfoEnum;
-import com.adrninistrator.jacg.common.enums.DefaultBusinessDataTypeEnum;
-import com.adrninistrator.jacg.common.enums.MethodCallFlagsEnum;
-import com.adrninistrator.jacg.common.enums.OtherConfigFileUseSetEnum;
-import com.adrninistrator.jacg.common.enums.OutputDetailEnum;
-import com.adrninistrator.jacg.common.enums.SqlKeyEnum;
+import com.adrninistrator.jacg.common.enums.*;
 import com.adrninistrator.jacg.dto.annotation.BaseAnnotationAttribute;
 import com.adrninistrator.jacg.dto.call_graph.CallGraphNode4Callee;
 import com.adrninistrator.jacg.dto.call_graph.SuperCallChildInfo;
+import com.adrninistrator.jacg.dto.call_line.CallGraphLineParsed;
 import com.adrninistrator.jacg.dto.method.MethodAndHash;
+import com.adrninistrator.jacg.dto.method.MethodDetail;
 import com.adrninistrator.jacg.dto.task.CalleeEntryMethodTaskInfo;
 import com.adrninistrator.jacg.dto.task.CalleeTaskInfo;
 import com.adrninistrator.jacg.dto.task.FindMethodTaskElement;
@@ -32,6 +29,14 @@ import com.adrninistrator.javacg.dto.stack.ListAsStack;
 import com.adrninistrator.javacg.util.JavaCGFileUtil;
 import com.adrninistrator.javacg.util.JavaCGMethodUtil;
 import com.adrninistrator.javacg.util.JavaCGUtil;
+import guru.nidi.graphviz.attribute.Label;
+import guru.nidi.graphviz.attribute.Rank;
+import guru.nidi.graphviz.engine.Format;
+import guru.nidi.graphviz.engine.Graphviz;
+import guru.nidi.graphviz.engine.GraphvizCmdLineEngine;
+import guru.nidi.graphviz.engine.GraphvizEngine;
+import guru.nidi.graphviz.model.Graph;
+import guru.nidi.graphviz.model.LinkSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -49,6 +54,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import static guru.nidi.graphviz.model.Factory.graph;
+import static guru.nidi.graphviz.model.Factory.node;
+import static guru.nidi.graphviz.model.Link.to;
 
 /**
  * @author adrninistrator
@@ -301,13 +311,17 @@ public class RunnerGenAllGraph4Callee extends AbstractRunnerGenCallGraph {
     // 执行处理一个被调用方法
     private boolean doHandleOneCalleeMethod(String entryCalleeSimpleClassName,
                                             FindMethodTaskElement findMethodTaskElement,
-                                            String origTaskText)  {
+                                            String origTaskText) {
         String entryCalleeMethodHash = findMethodTaskElement.getMethodHash();
         String entryCalleeFullMethod = findMethodTaskElement.getFullMethod();
         String entryMethodName = JACGClassMethodUtil.getMethodNameFromFull(entryCalleeFullMethod);
         // 生成方法对应的调用链文件名
         String outputFilePath4Method = currentOutputDirPath + File.separator + JACGConstants.DIR_OUTPUT_METHODS + File.separator +
                 JACGCallGraphFileUtil.getCallGraphMethodFileName(entryCalleeSimpleClassName, entryMethodName, entryCalleeMethodHash) + JACGConstants.EXT_TXT;
+        if (JACGConstants.EXT_SVG.equals(outputFileType)) {
+            outputFilePath4Method = currentOutputDirPath + File.separator + JACGConstants.DIR_OUTPUT_METHODS + File.separator +
+                    JACGCallGraphFileUtil.getCallGraphMethodFileName(entryCalleeSimpleClassName, entryMethodName, entryCalleeMethodHash) + JACGConstants.EXT_SVG;
+        }
         logger.info("当前方法输出文件名 {}", outputFilePath4Method);
 
         // 判断文件是否生成过
@@ -316,19 +330,36 @@ public class RunnerGenAllGraph4Callee extends AbstractRunnerGenCallGraph {
             return true;
         }
 
-        try (BufferedWriter writer4Method = JavaCGFileUtil.genBufferedWriter(outputFilePath4Method)) {
-            // 判断配置文件中是否已指定忽略当前方法
-            if (ignoreCurrentMethod(null, entryCalleeFullMethod)) {
-                logger.info("配置文件中已指定忽略当前方法，不处理 {}", entryCalleeFullMethod);
-                return true;
-            }
+        if (JACGConstants.EXT_SVG.equals(outputFileType)) {
+            try {
+                // 判断配置文件中是否已指定忽略当前方法
+                if (ignoreCurrentMethod(null, entryCalleeFullMethod)) {
+                    logger.info("配置文件中已指定忽略当前方法，不处理 {}", entryCalleeFullMethod);
+                    return true;
+                }
 
-            // 记录一个被调用方法的调用链信息
-            return recordOneCalleeMethod(entryCalleeSimpleClassName, entryCalleeMethodHash, entryCalleeFullMethod, findMethodTaskElement.getReturnType(),
-                    findMethodTaskElement.getCallFlags(), writer4Method);
-        } catch (Exception e) {
-            logger.error("error {} {} ", entryCalleeSimpleClassName, outputFilePath4Method, e);
-            return false;
+                // 记录一个被调用方法的调用链信息
+                return recordOneCalleeMethod(entryCalleeSimpleClassName, entryCalleeMethodHash, entryCalleeFullMethod, findMethodTaskElement.getReturnType(),
+                        findMethodTaskElement.getCallFlags(), outputFilePath4Method);
+            } catch (Exception e) {
+                logger.error("error {} {} ", entryCalleeSimpleClassName, outputFilePath4Method, e);
+                return false;
+            }
+        } else {
+            try (BufferedWriter writer4Method = JavaCGFileUtil.genBufferedWriter(outputFilePath4Method)) {
+                // 判断配置文件中是否已指定忽略当前方法
+                if (ignoreCurrentMethod(null, entryCalleeFullMethod)) {
+                    logger.info("配置文件中已指定忽略当前方法，不处理 {}", entryCalleeFullMethod);
+                    return true;
+                }
+
+                // 记录一个被调用方法的调用链信息
+                return recordOneCalleeMethod(entryCalleeSimpleClassName, entryCalleeMethodHash, entryCalleeFullMethod, findMethodTaskElement.getReturnType(),
+                        findMethodTaskElement.getCallFlags(), writer4Method);
+            } catch (Exception e) {
+                logger.error("error {} {} ", entryCalleeSimpleClassName, outputFilePath4Method, e);
+                return false;
+            }
         }
     }
 
@@ -394,6 +425,130 @@ public class RunnerGenAllGraph4Callee extends AbstractRunnerGenCallGraph {
         }
 
         writer4Method.write(calleeInfo.toString());
+        return true;
+    }
+
+    // 记录一个被调用方法的调用链信息
+    private boolean recordOneCalleeMethod(String entryCalleeSimpleClassName,
+                                          String entryCalleeMethodHash,
+                                          String entryCalleeFullMethod,
+                                          String entryCalleeReturnType,
+                                          int callFlags,
+                                          String outputFilePath4Method) throws IOException {
+        StringBuilder calleeInfo = new StringBuilder();
+
+        // 在文件第1行写入当前方法的完整信息
+        calleeInfo.append(entryCalleeFullMethod).append(JavaCGConstants.NEW_LINE);
+
+        // 确定写入输出文件的当前调用方法信息
+        String entryCalleeInfo = chooseEntryCalleeInfo(entryCalleeSimpleClassName, entryCalleeFullMethod, entryCalleeReturnType);
+
+        // 第2行写入当前方法的信息
+        calleeInfo.append(JACGCallGraphFileUtil.genOutputPrefix(JACGConstants.CALL_GRAPH_METHOD_LEVEL_START)).append(entryCalleeInfo);
+
+        // 判断被调用方法上是否有注解
+        if (MethodCallFlagsEnum.MCFE_EE_METHOD_ANNOTATION.checkFlag(callFlags)) {
+            StringBuilder methodAnnotations = new StringBuilder();
+            // 添加方法注解信息
+            getMethodAnnotationInfo(entryCalleeFullMethod, entryCalleeMethodHash, methodAnnotations);
+            if (methodAnnotations.length() > 0) {
+                calleeInfo.append(methodAnnotations);
+            }
+        }
+
+        if (businessDataTypeSet.contains(DefaultBusinessDataTypeEnum.BDTE_METHOD_ARG_GENERICS_TYPE.getType())) {
+            // 显示方法参数泛型类型
+            if (!addMethodArgGenericsTypeInfo(true, callFlags, entryCalleeMethodHash, calleeInfo)) {
+                return false;
+            }
+        }
+        if (businessDataTypeSet.contains(DefaultBusinessDataTypeEnum.BDTE_METHOD_RETURN_GENERICS_TYPE.getType())) {
+            // 显示方法返回泛型类型
+            if (!addMethodReturnGenericsTypeInfo(true, callFlags, entryCalleeMethodHash, calleeInfo)) {
+                return false;
+            }
+        }
+
+        calleeInfo.append(JavaCGConstants.NEW_LINE);
+
+        // 记录查找到的调用方法信息List
+        List<Pair<String, Boolean>> entryCallerMethodList = new ArrayList<>(JavaCGConstants.SIZE_100);
+
+        // 根据指定的调用者方法HASH，查找所有被调用的方法信息
+        if (!genAllGraph4Callee(entryCalleeMethodHash, entryCallerMethodList, entryCalleeFullMethod)) {
+            return false;
+        }
+
+        int size = entryCallerMethodList.size();
+        LinkSource[] linkSources = new LinkSource[size];
+
+        // 记录所有的调用方法
+        for (int i = 0; i < size; i++) {
+            Pair<String, Boolean> pair = entryCallerMethodList.get(i);
+            calleeInfo.append(pair.getLeft());
+            if (Boolean.TRUE.equals(pair.getRight())) {
+                // 对于入口方法，写入标志
+                calleeInfo.append(JACGConstants.CALLEE_FLAG_ENTRY);
+            }
+            calleeInfo.append(JavaCGConstants.NEW_LINE);
+
+            for (int j = i; j >= 0; j--) {
+                String currentLine = entryCallerMethodList.get(i).getLeft();
+                String parentLine = entryCallerMethodList.get(j).getLeft();
+
+                int currentMethodLevel = JACGCallGraphFileUtil.getMethodLevel(currentLine);
+                int parentMethodLevel = JACGCallGraphFileUtil.getMethodLevel(parentLine);
+
+                CallGraphLineParsed currentCallGraphLineParsed = JACGCallGraphFileUtil.parseCallGraphLine4ee(currentLine);
+                CallGraphLineParsed parentCallGraphLineParsed = JACGCallGraphFileUtil.parseCallGraphLine4ee(parentLine);
+
+                MethodDetail currentMethodDetail = currentCallGraphLineParsed.getMethodDetail();
+                MethodDetail parentMethodDetail = parentCallGraphLineParsed.getMethodDetail();
+
+                String currentMethodComment = "";
+                String parentMethodComment = "";
+                String zeroMethodComment = "";
+
+                List<String> currentCommentList = dbOperWrapper.getCommentTextByFullMethod(currentMethodDetail.getFullMethod());
+                List<String> parentCommentList = dbOperWrapper.getCommentTextByFullMethod(parentMethodDetail.getFullMethod());
+                List<String> zeroCommentList = dbOperWrapper.getCommentTextByFullMethod(entryCalleeInfo);
+
+                if(null != currentCommentList && !currentCommentList.isEmpty()) {
+                    currentMethodComment = currentCommentList.get(0);
+                }
+
+                if(null != parentCommentList && !parentCommentList.isEmpty()) {
+                    parentMethodComment = parentCommentList.get(0);
+                }
+
+                if(null != zeroCommentList && !zeroCommentList.isEmpty()) {
+                    zeroMethodComment = zeroCommentList.get(0);
+                }
+
+                int callerLineNum = currentCallGraphLineParsed.getLineNum();
+
+                if (1 == currentMethodLevel) {
+                    LinkSource linkSource = node(currentMethodDetail.getClassName() + ":" + currentMethodDetail.getMethodName() + "\n----------------\n" + currentMethodComment).link(to(node(entryCalleeInfo + "\n----------------\n" + zeroMethodComment)).with(Label.of("行号：" + callerLineNum)));
+                    linkSources[i] = linkSource;
+                    break;
+                } else if (currentMethodLevel > parentMethodLevel) {
+                    LinkSource linkSource = node(currentMethodDetail.getClassName() + ":" + currentMethodDetail.getMethodName() + "\n----------------\n" + currentMethodComment).link(to(node(parentMethodDetail.getClassName() + ":" + parentMethodDetail.getMethodName() + "\n----------------\n" + parentMethodComment)).with(Label.of("行号：" + callerLineNum)));
+                    linkSources[i] = linkSource;
+                    break;
+                }
+                if (null == linkSources[i]) {
+                    LinkSource linkSource = node(currentMethodDetail.getClassName() + ":" + currentMethodDetail.getMethodName() + "\n----------------\n" + currentMethodComment);
+                    linkSources[i] = linkSource;
+                    break;
+                }
+            }
+        }
+
+        Graph g = graph(entryCalleeMethodHash).directed().graphAttr().with(Rank.dir(Rank.RankDir.LEFT_TO_RIGHT)).with(linkSources);
+        GraphvizCmdLineEngine graphvizCmdLineEngine = new GraphvizCmdLineEngine();
+        graphvizCmdLineEngine.timeout(120, TimeUnit.SECONDS);
+        Graphviz.useEngine(graphvizCmdLineEngine);
+        Graphviz.fromGraph(g).render(Format.SVG).toFile(new File(outputFilePath4Method));
         return true;
     }
 

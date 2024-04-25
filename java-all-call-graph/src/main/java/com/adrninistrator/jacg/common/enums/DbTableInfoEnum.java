@@ -98,6 +98,16 @@ public enum DbTableInfoEnum {
             DC.MA_SIMPLE_CLASS_NAME,
             DC.MA_SPRING_MAPPING_ANNOTATION
     }),
+    DTIE_METHOD_COMMENT("method_comment", new String[]{
+            DC.MA_RECORD_ID,
+            DC.MA_METHOD_HASH,
+            DC.MA_ANNOTATION_NAME,
+            DC.MA_ATTRIBUTE_NAME,
+            DC.MA_ATTRIBUTE_TYPE,
+            DC.MA_ATTRIBUTE_VALUE,
+            DC.MA_FULL_METHOD,
+            DC.MA_SIMPLE_CLASS_NAME
+    }),
     DTIE_METHOD_ARG_GENERICS_TYPE("method_arg_generics_type", new String[]{
             DC.MAGT_RECORD_ID,
             DC.MAGT_METHOD_HASH,

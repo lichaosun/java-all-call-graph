@@ -54,6 +54,7 @@ public class JACGConstants {
 
     public static final String FLAG_EMPTY = "-empty";
 
+    public static final String EXT_SVG = ".svg";
     public static final String EXT_TXT = ".txt";
     public static final String EXT_EMPTY_TXT = FLAG_EMPTY + EXT_TXT;
     public static final String EXT_MD = ".md";

@@ -412,6 +412,16 @@ public class ConfigureWrapper {
             return "";
         }
 
+        if (ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_EXT == mainConfig && StringUtils.isBlank(strValue)) {
+            // 当前参数允许为空，默认为".txt"
+            return ".txt";
+        }
+
+        if (ConfigKeyEnum.CKE_CALL_GRAPH_JAVA_DIR == mainConfig && StringUtils.isBlank(strValue)) {
+            // 当前参数允许为空，默认为""
+            return "";
+        }
+
         if (ConfigDbKeyEnum.CDKE_DB_H2_FILE_PATH == mainConfig) {
             return handleDbH2FilePath(strValue);
         }

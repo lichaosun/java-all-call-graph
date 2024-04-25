@@ -155,6 +155,8 @@ public abstract class AbstractRunnerGenCallGraph extends AbstractRunner {
     // 输出结果展示详细程度枚举
     protected OutputDetailEnum outputDetailEnum;
 
+
+
     // 公共预处理
     protected boolean commonPreHandle() {
         outputDetailEnum = OutputDetailEnum.getFromDetail(configureWrapper.getMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_DETAIL));

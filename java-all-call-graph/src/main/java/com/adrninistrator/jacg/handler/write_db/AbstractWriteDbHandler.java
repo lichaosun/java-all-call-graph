@@ -6,7 +6,9 @@ import com.adrninistrator.jacg.common.enums.DbTableInfoEnum;
 import com.adrninistrator.jacg.dboper.DbOperWrapper;
 import com.adrninistrator.jacg.dboper.DbOperator;
 import com.adrninistrator.jacg.dto.write_db.AbstractWriteDbData;
+import com.adrninistrator.jacg.util.JACGFileUtil;
 import com.adrninistrator.jacg.util.JACGUtil;
+import com.adrninistrator.jacg.util.JavaDocUtil;
 import com.adrninistrator.javacg.common.JavaCGConstants;
 import com.adrninistrator.javacg.common.enums.JavaCGOutPutFileTypeEnum;
 import com.adrninistrator.javacg.dto.output.JavaCGOutputInfo;
@@ -18,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -238,6 +241,59 @@ public abstract class AbstractWriteDbHandler<T extends AbstractWriteDbData> {
      * 执行完毕之前的操作
      */
     protected void beforeDone() {
+    }
+
+    /**
+     * 读取文件并写入数据库
+     *
+     * @param list
+     * @return
+     */
+    public boolean handle(List<String> list) {
+        List<T> dataList = new ArrayList<>(batchSize);
+        for (String filePath : list) {
+            Map<String, String> map = JavaDocUtil.parseRawCommentText(filePath);
+            if (null != map) {
+                Set<String> keySet = map.keySet();
+                for (String fullMethod : keySet) {
+                    String rawCommentText = map.get(fullMethod).replace(JavaCGConstants.FILE_COLUMN_SEPARATOR, " ");
+                    String line = fullMethod + JavaCGConstants.FILE_COLUMN_SEPARATOR
+                            + "com.sun.tools.javadoc.Main" + JavaCGConstants.FILE_COLUMN_SEPARATOR
+                            + "all" + JavaCGConstants.FILE_COLUMN_SEPARATOR
+                            + "s" + JavaCGConstants.FILE_COLUMN_SEPARATOR
+                            + rawCommentText;
+
+                    String[] lineArray;
+                    if (minColumnNum == maxColumnNum) {
+                        lineArray = splitEquals(line, minColumnNum);
+                    } else {
+                        lineArray = splitBetween(line, minColumnNum, maxColumnNum);
+                    }
+
+                    // 根据读取的文件内容生成对应对象
+                    T data = genData(lineArray);
+                    if (data == null) {
+                        continue;
+                    }
+
+                    // 对生成数据的自定义处理
+                    handleData(data);
+
+                    dataList.add(data);
+                    // 将数据写入数据库
+                    tryInsertDb(dataList);
+
+                }
+
+            }
+        }
+
+        // 结束前将剩余数据写入数据库
+        insertDb(dataList);
+
+        // 执行完毕之前的操作
+        beforeDone();
+        return true;
     }
 
     /**

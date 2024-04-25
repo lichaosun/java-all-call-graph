@@ -14,6 +14,9 @@ public class CallGraphLineParsed {
     // 方法级别
     private int methodLevel;
 
+    // 方法所在类的行号
+    private int lineNum;
+
     // 调用或被调用方法详情
     private MethodDetail methodDetail;
 
@@ -44,6 +47,14 @@ public class CallGraphLineParsed {
 
     public void setMethodLevel(int methodLevel) {
         this.methodLevel = methodLevel;
+    }
+
+    public int getLineNum() {
+        return lineNum;
+    }
+
+    public void setLineNum(int lineNum) {
+        this.lineNum = lineNum;
     }
 
     public MethodDetail getMethodDetail() {

@@ -55,6 +55,10 @@ List apache_common = [
         'commons-codec:commons-codec:1.15'
 ]
 
+List graphviz = ['guru.nidi:graphviz-java:0.18.1']
+
+List java_tools = [files('lib/tools.jar')]
+
 List druid = ['com.alibaba:druid:1.2.15']
 
 List mysql = ['com.mysql:mysql-connector-j:8.0.31']
@@ -96,8 +100,9 @@ List javax_inject = ['javax.inject:javax.inject:1']
 List spring_test = ['org.springframework:spring-test:5.3.26']
 
 dependencies {
-    compile apache_common, druid, mysql, h2database, slf4j, java_callgraph, mybatis_parser, jackson, jdom, spring_jdbc
+    compile apache_common, graphviz, java_tools, druid, mysql, h2database, slf4j, java_callgraph, mybatis_parser, jackson, jdom, spring_jdbc
     testImplementation log4j, junit, spring_for_test, javax_inject, spring_test
+
 }
 
 compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"

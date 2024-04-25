@@ -6,6 +6,7 @@ import com.adrninistrator.jacg.common.enums.DbInsertMode;
 import com.adrninistrator.jacg.common.enums.DbTableInfoEnum;
 import com.adrninistrator.jacg.common.enums.SqlKeyEnum;
 import com.adrninistrator.jacg.conf.ConfigureWrapper;
+import com.adrninistrator.jacg.dto.write_db.WriteDbData4ClassName;
 import com.adrninistrator.jacg.dto.write_db.WriteDbData4LambdaMethodInfo;
 import com.adrninistrator.jacg.dto.write_db.WriteDbData4MethodAnnotation;
 import com.adrninistrator.jacg.dto.write_db.WriteDbData4MethodCall;
@@ -349,6 +350,36 @@ public class DbOperWrapper {
         }
 
         return dbOperator.queryList(sql, WriteDbData4MethodCall.class, calleeMethodHash, calleeObjType);
+    }
+
+    /**
+     * 根据方法名查找方法备注
+     *
+     * @return
+     */
+    public List<String> getCommentTextByFullMethod(String fullMethod) {
+        SqlKeyEnum sqlKeyEnum = SqlKeyEnum.MA_QUERY_COMMENT_BY_FULL_METHOD;
+        String sql = getCachedSql(sqlKeyEnum);
+        if (sql == null) {
+            sql = "select " + DC.CA_ATTRIBUTE_VALUE +
+                    " from " + DbTableInfoEnum.DTIE_METHOD_COMMENT.getTableName() +
+                    " where " + DC.MA_FULL_METHOD + " like concat(?, '%')";
+            sql = cacheSql(sqlKeyEnum, sql);
+        }
+
+        return dbOperator.queryListOneColumn(sql, String.class, fullMethod);
+    }
+
+    public List<String> getClassName() {
+        SqlKeyEnum sqlKeyEnum = SqlKeyEnum.MI_QUERY_CLASS_NAME;
+        String sql = getCachedSql(sqlKeyEnum);
+        if (sql == null) {
+            sql = "select " + DC.CN_CLASS_NAME +
+                    " from " + DbTableInfoEnum.DTIE_CLASS_NAME.getTableName();
+            sql = cacheSql(sqlKeyEnum, sql);
+        }
+
+        return dbOperator.queryListOneColumn(sql, String.class);
     }
 
     /**
