@@ -8,7 +8,8 @@ CREATE TABLE if not exists jacg_method_comment_{appName} (
   full_method text NOT NULL COMMENT '完整方法（类名+方法名+参数）',
   simple_class_name varchar(500) NOT NULL COMMENT '唯一类名',
   PRIMARY KEY (record_id),
-  INDEX idx_ma_1_{appName}(method_hash, annotation_name(255)),
-  INDEX idx_ma_an_{appName}(annotation_name(255)),
-  INDEX idx_ma_scn_{appName}(simple_class_name(255))
+  INDEX idx_mc_mh_av_{appName}(method_hash, attribute_value(255)),
+  INDEX idx_mc_fm_av_{appName}(full_method(255), attribute_value(255)),
+  INDEX idx_mc_av_{appName}(attribute_value(255)),
+  INDEX idx_mc_fm_{appName}(full_method(255))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='方法上的注解信息表';

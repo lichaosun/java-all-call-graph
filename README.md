@@ -6,9 +6,9 @@
 
 `本项目提供了扩展功能，可用于为Java代码自动生成UML时序图`，可参考[https://github.com/Adrninistrator/gen-java-code-uml-sequence-diagram](https://github.com/Adrninistrator/gen-java-code-uml-sequence-diagram)，实际上生成UML时序图这个项目为空，原作者还没有实现。
 
-新增的功能之一就是实现：Java代码自动生成UML流程图。
+新增的功能之一就是实现：Java代码自动生成UML流程图。 `configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_EXT, ".svg");`
 
-新增的功能之二就是实现：流程图中支持显示Java方法注释。
+新增的功能之二就是实现：流程图中支持显示Java方法注释。 `configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_JAVA_DIR, "./src/main/java");`
 
 总之，一切都是为了增强可读性，实用性。
 
