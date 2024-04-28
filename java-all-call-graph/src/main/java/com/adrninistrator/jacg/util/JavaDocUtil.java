@@ -52,6 +52,14 @@ public class JavaDocUtil {
                 JavaDocUtil.class.getResource("/").getPath(),
                 "-encoding", "utf-8",
                 filePath});
+        if(null == rootDoc) {
+            com.sun.tools.javadoc.Main.execute(new String[]{"-doclet",
+                    JavaDocUtil.class.getName(),
+                    "-docletpath",
+                    JavaDocUtil.class.getResource("/").getPath(),
+                    "-encoding", "gbk",
+                    filePath});
+        }
         return rootDoc;
     }
 
@@ -64,6 +72,7 @@ public class JavaDocUtil {
     public static Map<String, String> parseRawCommentText(String javaFilePath) {
         RootDoc rootDoc = getRootDoc(javaFilePath);
         if (null == rootDoc) {
+            logger.error("JavaDoc Failed: {}", javaFilePath);
             return null;
         }
         Map<String, String> map = new HashMap<>();

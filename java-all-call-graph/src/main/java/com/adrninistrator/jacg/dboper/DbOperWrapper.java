@@ -354,7 +354,8 @@ public class DbOperWrapper {
 
     /**
      * 根据方法名查找方法备注
-     *
+     * 
+     * @param fullMethod
      * @return
      */
     public List<String> getCommentTextByFullMethod(String fullMethod) {

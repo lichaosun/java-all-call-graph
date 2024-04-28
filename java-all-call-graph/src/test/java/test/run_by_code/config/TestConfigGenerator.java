@@ -7,6 +7,8 @@ import com.adrninistrator.jacg.common.enums.OtherConfigFileUseListEnum;
 import com.adrninistrator.jacg.common.enums.OtherConfigFileUseSetEnum;
 import com.adrninistrator.jacg.common.enums.OutputDetailEnum;
 import com.adrninistrator.jacg.conf.ConfigureWrapper;
+import com.adrninistrator.jacg.runner.RunnerGenAllGraph4Callee;
+import com.adrninistrator.jacg.runner.RunnerWriteDb;
 import com.adrninistrator.javacg.common.JavaCGCommonNameConstants;
 import test.call_graph.annotation.CallMethodWithAnnotation;
 import test.call_graph.annotation.MethodWithAnnotation;
@@ -43,7 +45,7 @@ public class TestConfigGenerator {
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_IGNORE_DUP_CALLEE_IN_ONE_CALLER, Boolean.FALSE.toString());
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_DB_INSERT_BATCH_SIZE, "1000");
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CHECK_JAR_FILE_UPDATED, Boolean.TRUE.toString());
-        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_OUTPUT_ROOT_PATH, "");
+        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_OUTPUT_ROOT_PATH, "D:\\jar");
 
         // H2
         configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USE_H2, Boolean.TRUE.toString());
@@ -62,55 +64,65 @@ public class TestConfigGenerator {
             gradlew test_jar
          */
         configureWrapper.setOtherConfigList(OtherConfigFileUseListEnum.OCFULE_JAR_DIR,
-                "build/libs/test.jar"
+                "D:\\jar\\test.jar"
         );
 
         configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_ALLOWED_CLASS_PREFIX,
+                "org.",
                 "test.call_graph.",
+                "com.",
                 "java."
         );
 
-        configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLEE,
-                TestMCCallee.class.getName() + ":20",
-                TestMCCallee.class.getName() + ":run(",
-                TestMCCallee.class.getName() + ":run(",
-                System.class.getName(),
-                MethodWithAnnotation.class.getName(),
-                TestArgument1.class.getName(),
-                TestCycleCall1.class.getName()
-        );
-
-        configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLER,
-                MethodWithAnnotation.class.getName(),
-                TestMCCaller.class.getName() + ":20",
-                TestArgument1.class.getName() + ":test(",
-                TestArgument2.class.getName() + ":test(",
-                TestArgument2.class.getName() + ":test(",
-                TestArgumentGenerics1.class.getName(),
-                CallMethodWithAnnotation.class.getName() + ":test1(",
-                InterfaceSuper1.class.getName() + ":testSuper1(",
-                InterfaceSuper2.class.getName() + ":testSuper2(",
-                TestCycleCall1.class.getName(),
-                ChildClassA1.class.getName(),
-                ChildClassA2.class.getName(),
-                ChildClassB1.class.getName(),
-                ChildClassB2.class.getName(),
-                TestExtendComplex.class.getName(),
-                test.call_graph.future.CallableImpl.class.getName() + ":call(",
-                TestSpringController1.class.getName(),
-                TestUseComplexService.class.getName()
-        );
-
-        configureWrapper.setOtherConfigList(OtherConfigFileUseListEnum.OCFULE_FIND_STACK_KEYWORD_4EE,
-                JACGConstants.CALLEE_FLAG_ENTRY_NO_TAB,
-                JavaCGCommonNameConstants.METHOD_NAME_INIT
-        );
-
-        configureWrapper.setOtherConfigList(OtherConfigFileUseListEnum.OCFULE_FIND_STACK_KEYWORD_4ER,
-                System.class.getName(),
-                Deprecated.class.getName()
-        );
+//        configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLEE,
+//                TestMCCallee.class.getName() + ":20",
+//                TestMCCallee.class.getName() + ":run(",
+//                TestMCCallee.class.getName() + ":run(",
+//                System.class.getName(),
+//                MethodWithAnnotation.class.getName(),
+//                TestArgument1.class.getName(),
+//                TestCycleCall1.class.getName()
+//        );
+//
+//        configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLER,
+//                MethodWithAnnotation.class.getName(),
+//                TestMCCaller.class.getName() + ":20",
+//                TestArgument1.class.getName() + ":test(",
+//                TestArgument2.class.getName() + ":test(",
+//                TestArgument2.class.getName() + ":test(",
+//                TestArgumentGenerics1.class.getName(),
+//                CallMethodWithAnnotation.class.getName() + ":test1(",
+//                InterfaceSuper1.class.getName() + ":testSuper1(",
+//                InterfaceSuper2.class.getName() + ":testSuper2(",
+//                TestCycleCall1.class.getName(),
+//                ChildClassA1.class.getName(),
+//                ChildClassA2.class.getName(),
+//                ChildClassB1.class.getName(),
+//                ChildClassB2.class.getName(),
+//                TestExtendComplex.class.getName(),
+//                test.call_graph.future.CallableImpl.class.getName() + ":call(",
+//                TestSpringController1.class.getName(),
+//                TestUseComplexService.class.getName()
+//        );
+//
+//        configureWrapper.setOtherConfigList(OtherConfigFileUseListEnum.OCFULE_FIND_STACK_KEYWORD_4EE,
+//                JACGConstants.CALLEE_FLAG_ENTRY_NO_TAB,
+//                JavaCGCommonNameConstants.METHOD_NAME_INIT
+//        );
+//
+//        configureWrapper.setOtherConfigList(OtherConfigFileUseListEnum.OCFULE_FIND_STACK_KEYWORD_4ER,
+//                System.class.getName(),
+//                Deprecated.class.getName()
+//        );
 
         return configureWrapper;
+    }
+
+    public static void main(String[] args) {
+        ConfigureWrapper configureWrapper = genConfigureWrapper();
+        RunnerWriteDb runnerWriteDb = new RunnerWriteDb();
+        runnerWriteDb.run(configureWrapper);
+        RunnerGenAllGraph4Callee runnerGenAllGraph4Callee = new RunnerGenAllGraph4Callee();
+        runnerGenAllGraph4Callee.run(configureWrapper);
     }
 }
