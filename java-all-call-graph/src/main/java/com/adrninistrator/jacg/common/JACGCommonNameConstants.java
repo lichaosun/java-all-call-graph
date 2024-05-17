@@ -86,6 +86,10 @@ public class JACGCommonNameConstants {
 
     public static final String SPRING_TX_ANNOTATION = "org.springframework.transaction.annotation.Transactional";
 
+    public static final String FORGE_ROASTER_ANNOTATION = "org.jboss.forge.roaster.Roaster";
+
+    public static final String JAVADOC_MAIN_ANNOTATION = "com.sun.tools.javadoc.Main";
+
     public static final String SPRING_TX_ATTRIBUTE_PROPAGATION = "propagation";
 
     public static final String SPRING_ASYNC_ANNOTATION = "org.springframework.scheduling.annotation.Async";

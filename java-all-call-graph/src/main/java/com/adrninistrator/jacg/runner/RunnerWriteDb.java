@@ -165,6 +165,11 @@ public class RunnerWriteDb extends RunnerWriteCallGraphFile {
         // 处理注解信息
         handleAnnotations(springControllerMethodHashSet, withAnnotationMethodHashSet);
 
+        System.out.println("-----------------处理注释信息：start");
+        // 处理注释信息
+        handleComments();
+        System.out.println("-----------------处理注释信息：end");
+
         Set<String> withArgsGenericsTypeMethodHash = new HashSet<>();
         Set<String> withReturnGenericsTypeMethodHash = new HashSet<>();
         Set<Integer> withInfoCallIdSet = new HashSet<>();
@@ -221,9 +226,6 @@ public class RunnerWriteDb extends RunnerWriteCallGraphFile {
             return false;
         }
 
-        // 处理注释信息
-        handleComments();
-
         // 打印重复的类名
         printDuplicateClasses();
 
@@ -231,6 +233,7 @@ public class RunnerWriteDb extends RunnerWriteCallGraphFile {
             // 显示H2数据库JDBC URL
             printH2JdbcUrl();
         }
+
         return true;
     }
 

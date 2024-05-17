@@ -153,6 +153,7 @@ public abstract class AbstractRunner {
 
         try {
             logger.info("{} 开始执行", currentSimpleClassName);
+            System.out.println("开始执行: " + currentSimpleClassName);
             long startTime = System.currentTimeMillis();
             someTaskFail = false;
 
@@ -161,6 +162,7 @@ public abstract class AbstractRunner {
 
             // 预检查
             if (!preCheck()) {
+                System.out.println("预检查失败: " + currentSimpleClassName);
                 logger.error("{} 预检查失败", currentSimpleClassName);
                 return false;
             }
@@ -168,6 +170,7 @@ public abstract class AbstractRunner {
             // 预处理
             if (!preHandle()) {
                 logger.error("{} 预处理失败", currentSimpleClassName);
+                System.out.println("预处理失败: " + currentSimpleClassName);
                 return false;
             }
 
@@ -176,6 +179,7 @@ public abstract class AbstractRunner {
 
             if (someTaskFail) {
                 logger.error("{} 执行失败", currentSimpleClassName);
+                System.out.println("执行失败: " + currentSimpleClassName);
                 return false;
             }
             // 执行完毕时尝试打印当前使用的配置信息
@@ -185,6 +189,7 @@ public abstract class AbstractRunner {
             return true;
         } catch (Exception e) {
             logger.error("error {} ", currentSimpleClassName, e);
+            e.printStackTrace();
             return false;
         } finally {
             // 结束前的处理，需要确保能执行到，在其中会关闭数据源

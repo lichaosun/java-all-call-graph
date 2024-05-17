@@ -55,6 +55,19 @@ List apache_common = [
         'commons-codec:commons-codec:1.15'
 ]
 
+List jboss_roaster = [
+        'org.jboss.forge.roaster:roaster-jdt:2.22.3.Final',
+        'org.jboss.forge.roaster:roaster-api:2.22.3.Final'
+]
+
+List cpdetector = [
+        //'net.sourceforge.cpdetector:cpdetector:1.0.7'
+        files('lib/cpdetector_1.0.7.jar'),
+        files('lib/antlr.jar'),
+        files('lib/chardet.jar'),
+        files('lib/jargs.jar')
+]
+
 List graphviz = ['guru.nidi:graphviz-java:0.18.1']
 
 List java_tools = [files('lib/tools.jar')]
@@ -101,7 +114,7 @@ List javax_inject = ['javax.inject:javax.inject:1']
 List spring_test = ['org.springframework:spring-test:5.3.26']
 
 dependencies {
-    compile apache_common, graphviz, java_tools, druid, mysql, h2database, slf4j, java_callgraph, mybatis_parser, jackson, jdom, spring_jdbc
+    compile apache_common, cpdetector, graphviz, java_tools, jboss_roaster, druid, mysql, h2database, slf4j, java_callgraph, mybatis_parser, jackson, jdom, spring_jdbc
     testImplementation log4j, junit, spring_for_test, javax_inject, spring_test
 
 }

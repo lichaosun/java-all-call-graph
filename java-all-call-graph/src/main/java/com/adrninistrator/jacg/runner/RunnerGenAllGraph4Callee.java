@@ -482,6 +482,8 @@ public class RunnerGenAllGraph4Callee extends AbstractRunnerGenCallGraph {
         int size = entryCallerMethodList.size();
         LinkSource[] linkSources = new LinkSource[size];
 
+        String zeroMethodComment = "";
+        List<String> zeroCommentList = dbOperWrapper.getCommentTextByFullMethod(entryCalleeInfo);
         // 记录所有的调用方法
         for (int i = 0; i < size; i++) {
             Pair<String, Boolean> pair = entryCallerMethodList.get(i);
@@ -492,26 +494,20 @@ public class RunnerGenAllGraph4Callee extends AbstractRunnerGenCallGraph {
             }
             calleeInfo.append(JavaCGConstants.NEW_LINE);
 
+            String currentMethodComment = "";
+            String currentLine = entryCallerMethodList.get(i).getLeft();
+            int currentMethodLevel = JACGCallGraphFileUtil.getMethodLevel(currentLine);
+            CallGraphLineParsed currentCallGraphLineParsed = JACGCallGraphFileUtil.parseCallGraphLine4ee(currentLine);
+            MethodDetail currentMethodDetail = currentCallGraphLineParsed.getMethodDetail();
+            List<String> currentCommentList = dbOperWrapper.getCommentTextByFullMethod(currentMethodDetail.getFullMethod());
+
             for (int j = i; j >= 0; j--) {
-                String currentLine = entryCallerMethodList.get(i).getLeft();
-                String parentLine = entryCallerMethodList.get(j).getLeft();
-
-                int currentMethodLevel = JACGCallGraphFileUtil.getMethodLevel(currentLine);
-                int parentMethodLevel = JACGCallGraphFileUtil.getMethodLevel(parentLine);
-
-                CallGraphLineParsed currentCallGraphLineParsed = JACGCallGraphFileUtil.parseCallGraphLine4ee(currentLine);
-                CallGraphLineParsed parentCallGraphLineParsed = JACGCallGraphFileUtil.parseCallGraphLine4ee(parentLine);
-
-                MethodDetail currentMethodDetail = currentCallGraphLineParsed.getMethodDetail();
-                MethodDetail parentMethodDetail = parentCallGraphLineParsed.getMethodDetail();
-
-                String currentMethodComment = "";
                 String parentMethodComment = "";
-                String zeroMethodComment = "";
-
-                List<String> currentCommentList = dbOperWrapper.getCommentTextByFullMethod(currentMethodDetail.getFullMethod());
+                String parentLine = entryCallerMethodList.get(j).getLeft();
+                int parentMethodLevel = JACGCallGraphFileUtil.getMethodLevel(parentLine);
+                CallGraphLineParsed parentCallGraphLineParsed = JACGCallGraphFileUtil.parseCallGraphLine4ee(parentLine);
+                MethodDetail parentMethodDetail = parentCallGraphLineParsed.getMethodDetail();
                 List<String> parentCommentList = dbOperWrapper.getCommentTextByFullMethod(parentMethodDetail.getFullMethod());
-                List<String> zeroCommentList = dbOperWrapper.getCommentTextByFullMethod(entryCalleeInfo);
 
                 if(null != currentCommentList && !currentCommentList.isEmpty()) {
                     currentMethodComment = currentCommentList.get(0);
@@ -536,11 +532,11 @@ public class RunnerGenAllGraph4Callee extends AbstractRunnerGenCallGraph {
                     linkSources[i] = linkSource;
                     break;
                 }
-                if (null == linkSources[i]) {
-                    LinkSource linkSource = node(currentMethodDetail.getClassName() + ":" + currentMethodDetail.getMethodName() + "\n----------------\n" + currentMethodComment);
-                    linkSources[i] = linkSource;
-                    break;
-                }
+            }
+            if (null == linkSources[i]) {
+                LinkSource linkSource = node(currentMethodDetail.getClassName() + ":" + currentMethodDetail.getMethodName() + "\n----------------\n" + currentMethodComment);
+                linkSources[i] = linkSource;
+                break;
             }
         }
 

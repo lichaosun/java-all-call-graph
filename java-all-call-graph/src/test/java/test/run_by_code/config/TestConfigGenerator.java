@@ -7,6 +7,7 @@ import com.adrninistrator.jacg.common.enums.OtherConfigFileUseListEnum;
 import com.adrninistrator.jacg.common.enums.OtherConfigFileUseSetEnum;
 import com.adrninistrator.jacg.common.enums.OutputDetailEnum;
 import com.adrninistrator.jacg.conf.ConfigureWrapper;
+import com.adrninistrator.jacg.dboper.DbOperWrapper;
 import com.adrninistrator.jacg.runner.RunnerGenAllGraph4Callee;
 import com.adrninistrator.jacg.runner.RunnerWriteDb;
 import com.adrninistrator.javacg.common.JavaCGCommonNameConstants;
@@ -28,6 +29,12 @@ import test.call_graph.method_call.TestMCCaller;
 import test.call_graph.spring.bean.use.complex.TestUseComplexService;
 import test.call_graph.spring.mvc.TestSpringController1;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author adrninistrator
  * @date 2023/4/28
@@ -45,32 +52,33 @@ public class TestConfigGenerator {
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_IGNORE_DUP_CALLEE_IN_ONE_CALLER, Boolean.FALSE.toString());
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_DB_INSERT_BATCH_SIZE, "1000");
         configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CHECK_JAR_FILE_UPDATED, Boolean.TRUE.toString());
-        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_OUTPUT_ROOT_PATH, "D:\\jar");
+        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_OUTPUT_ROOT_PATH, "");
+        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_OUTPUT_EXT, ".svg");
+        configureWrapper.setMainConfig(ConfigKeyEnum.CKE_CALL_GRAPH_JAVA_DIR, "D:\\workspace\\java-all-call-graph\\java-all-call-graph\\src\\main\\java");
 
         // H2
-        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USE_H2, Boolean.TRUE.toString());
-        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_H2_FILE_PATH, "./build/jacg_h2db_rbc");
+//        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USE_H2, Boolean.TRUE.toString());
+//        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_H2_FILE_PATH, "./build/jacg_h2db_rbc");
 
         // MySQL
-//        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USE_H2, Boolean.FALSE.toString());
-//        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_DRIVER_NAME, com.mysql.cj.jdbc.Driver.class.getName());
-//        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_URL,
-//                "jdbc:mysql://x.x.x.x:3306/database?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true");
-//        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USERNAME, "username");
-//        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_PASSWORD, "password");
+        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USE_H2, Boolean.FALSE.toString());
+        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_DRIVER_NAME, com.mysql.cj.jdbc.Driver.class.getName());
+        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_URL,
+                "jdbc:mysql://127.0.0.1:3306/jacg?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true");
+        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_USERNAME, "root");
+        configureWrapper.setMainConfig(ConfigDbKeyEnum.CDKE_DB_PASSWORD, "1q2w3e4r");
 
         /*
             test.jar通过执行以下命令生成：
             gradlew test_jar
          */
         configureWrapper.setOtherConfigList(OtherConfigFileUseListEnum.OCFULE_JAR_DIR,
-                "D:\\jar\\test.jar"
+                "build/classes/java"
         );
 
         configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_ALLOWED_CLASS_PREFIX,
-                "org.",
-                "test.call_graph.",
                 "com.",
+                "test.call_graph.",
                 "java."
         );
 
@@ -118,11 +126,38 @@ public class TestConfigGenerator {
         return configureWrapper;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         ConfigureWrapper configureWrapper = genConfigureWrapper();
         RunnerWriteDb runnerWriteDb = new RunnerWriteDb();
         runnerWriteDb.run(configureWrapper);
-        RunnerGenAllGraph4Callee runnerGenAllGraph4Callee = new RunnerGenAllGraph4Callee();
-        runnerGenAllGraph4Callee.run(configureWrapper);
+
+        Thread.sleep(10000);
+
+        List<String> userstory = new ArrayList<>();
+        userstory.add("生成指定数量的问号，使用括号包含");
+        userstory.add("启用指定的方法调用");
+        userstory.add("根据方法HASH+长度查询查询对应的方法参数泛型类型");
+
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(4, 10, 60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(10));
+        threadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        for(String story: userstory) {
+            threadPoolExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    DbOperWrapper dbOperWrapper = DbOperWrapper.genInstance(configureWrapper, "test");
+                    List<String> list = dbOperWrapper.getFullMethodByCommentText(story);
+                    if(null != list && !list.isEmpty()) {
+                        configureWrapper.setOtherConfigSet(OtherConfigFileUseSetEnum.OCFUSE_METHOD_CLASS_4CALLEE, list.toArray(new String[list.size()]));
+                    }
+                    RunnerGenAllGraph4Callee runnerGenAllGraph4Callee = new RunnerGenAllGraph4Callee();
+                    runnerGenAllGraph4Callee.run(configureWrapper);
+
+                }
+            });
+        }
+        threadPoolExecutor.shutdown();
+
+//        RunnerGenAllGraph4Caller runnerGenAllGraph4Caller = new RunnerGenAllGraph4Caller();
+//        runnerGenAllGraph4Caller.run(configureWrapper);
     }
 }
