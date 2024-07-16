@@ -12,4 +12,4 @@ CREATE TABLE if not exists jacg_method_comment_{appName} (
   INDEX idx_mc_fm_av_{appName}(full_method(255), attribute_value(255)),
   INDEX idx_mc_av_{appName}(attribute_value(255)),
   INDEX idx_mc_fm_{appName}(full_method(255))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='方法上的注解信息表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='方法上的注释信息表';

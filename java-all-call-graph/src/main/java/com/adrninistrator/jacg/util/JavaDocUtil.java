@@ -9,20 +9,27 @@ import org.apache.commons.io.FileUtils;
 import org.jboss.forge.roaster.Roaster;
 import info.monitorenter.cpdetector.io.*;
 import org.jboss.forge.roaster.model.JavaType;
-import org.jboss.forge.roaster.model.impl.JavaAnnotationImpl;
 import org.jboss.forge.roaster.model.impl.JavaEnumImpl;
 import org.jboss.forge.roaster.model.impl.JavaInterfaceImpl;
 import org.jboss.forge.roaster.model.source.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.tools.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.JavacTask;
+import com.sun.source.util.TreeScanner;
+import com.sun.source.util.Trees;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 
 
 /**
@@ -243,10 +250,5 @@ public class JavaDocUtil {
         return null;
     }
 
-    public static void main(String[] args) {
-        String javaFilePath = "D:\\workspace\\java-all-call-graph\\java-all-call-graph\\src\\main\\java\\com\\adrninistrator\\jacg\\handler\\write_db\\AbstractWriteDbHandler.java";
-        String charset = getFileEncode(new File(javaFilePath));
-        Map<String, String> text = parseCommentText(javaFilePath);
-        System.out.println(text.size());
-    }
+  
 }
